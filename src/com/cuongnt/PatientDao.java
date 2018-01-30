@@ -17,16 +17,17 @@ import java.util.List;
 
 public class PatientDao {
     private static final String PATIENT_FILE_NAME = "patient.txt";
+    private static final String REVIEW_PATIENT_FILE_NAME = "review_list.txt";
 
     /*
     * Save list patient to file
     * */
-    public void write(List<Patient> patientList) {
+    public void write(List<Patient> patientList, boolean isReviewList) {
         FileOutputStream fos = null;
         ObjectOutputStream oos = null;
 
         try {
-            fos = new FileOutputStream(new File(PATIENT_FILE_NAME));
+            fos = new FileOutputStream(new File(isReviewList ? REVIEW_PATIENT_FILE_NAME : PATIENT_FILE_NAME));
             oos = new ObjectOutputStream(fos);
             oos.writeObject(patientList);
         } catch (FileNotFoundException e) {
@@ -41,12 +42,17 @@ public class PatientDao {
     /*
     * Read list Patient from file
     * */
-    public List<Patient> read() {
+    public List<Patient> read(boolean isReviewList) {
         List<Patient> patientList = new ArrayList<>();
         FileInputStream fis = null;
         ObjectInputStream ois = null;
+        File targetFile = new File(isReviewList ? REVIEW_PATIENT_FILE_NAME : PATIENT_FILE_NAME);
         try {
-            fis = new FileInputStream(new File(PATIENT_FILE_NAME));
+            if (!targetFile.exists()) {
+                targetFile.mkdirs();
+                targetFile.createNewFile();
+            }
+            fis = new FileInputStream(targetFile);
             ois = new ObjectInputStream(fis);
             patientList = (List<Patient>) ois.readObject();
         } catch (FileNotFoundException e) {

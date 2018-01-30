@@ -1,8 +1,8 @@
 package model;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.io.Serializable;
 
-public class Patient {
+public class Patient implements Serializable {
 
     // Instance variables
     int id;
@@ -33,7 +33,7 @@ public class Patient {
     }
 
     public String getName() {
-        return name;
+        return null == name ? "" : name;
     }
 
     public void setName(String name) {
@@ -79,5 +79,4 @@ public class Patient {
     public void setExaminated(int examinated) {
         isExaminated = examinated;
     }
-
 }

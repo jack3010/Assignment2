@@ -1,29 +1,39 @@
 package com.cuongnt;
 
+import com.cuongnt.utils.Utils;
 import model.Patient;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 public class PatientManager {
     public static Scanner scanner = new Scanner(System.in);
+    private static final int PATIENT_TOOK_AN_EXAM = 1;
     private List<Patient> patientList;
+    private List<Patient> reviewedPatientList;
     private PatientDao patientDao;
+
+    public List<Patient> getReviewedPatientList() {
+        return reviewedPatientList;
+    }
 
     public PatientManager() {
         patientDao = new PatientDao();
-        patientList = patientDao.read();
+        patientList = patientDao.read(false);
+        reviewedPatientList = patientDao.read(true);
     }
 
     /*
-    * Add patient to patientList
-    * */
+     * Add patient to patientList
+     * */
 
     public void addPatient() {
-//        int id = patientList.size() > 0 ? patientList.size() + 1 : 1;
-//        System.out.println("patient id = " + id);
-        int id = inputId();
+        int id = patientList.size() > 0 ? patientList.size() + 1 : 1;
+        System.out.println("patient id = " + id);
+//        int id = inputId();
         String name = inputPatientName();
         int age = inputPatientAge();
         String address = inputPatientAddress();
@@ -32,13 +42,21 @@ public class PatientManager {
         int tookAnExam = patientIsTakeAnExam();
         Patient patient = new Patient(id, name, age, address, telephone, priority, tookAnExam);
         patientList.add(patient);
-        patientDao.write(patientList);
+        if (tookAnExam == PATIENT_TOOK_AN_EXAM) {
+            patientDao.write(patientList, false);
+        }
     }
+
     /*
-    * show list patient
-    * */
-    public void show() {
-        for (Patient patient : patientList) {
+     * show list patient
+     * */
+    public void show(boolean isReviewList) {
+        List<Patient> targetList = isReviewList ? getReviewedPatientList() : getPatientList();
+        show(targetList);
+    }
+
+    public void show(List<Patient> patients) {
+        for (Patient patient : patients) {
             System.out.format("%5d  | ", patient.getId());
             System.out.format("%20s | ", patient.getName());
             System.out.format("%5d  | ", patient.getAge());
@@ -51,8 +69,8 @@ public class PatientManager {
     }
 
     /*
-    * sort by priority
-    * */
+     * sort by priority
+     * */
     public void sortByPriority() {
         Collections.sort(patientList, new SortPatientByPriority());
     }
@@ -70,34 +88,37 @@ public class PatientManager {
     }
 
     /*
-    * input patient name
-    * */
+     * input patient name
+     * */
     private String inputPatientName() {
         System.out.println("Input patient name: ");
         return scanner.nextLine();
     }
 
     /*
-    * input patient age
-    * */
+     * input patient age
+     * */
     private int inputPatientAge() {
         System.out.print("Input patient age: ");
-        while (true) {
+        int age = 0;
+        do {
             try {
-                int age = Integer.parseInt((scanner.nextLine()));
-                if (age < 0 && age > 200) {
-                    throw new NumberFormatException();
+                age = Integer.parseInt((scanner.nextLine()));
+                if (age < 0 || age > 200) {
+                    System.out.println("Invalid age of patient");
+                    System.out.print("Input patient age: ");
                 }
-                return age;
             } catch (NumberFormatException ex) {
-                System.out.print("Invalid age of patient");
+                System.out.println("Invalid age of patient");
+                System.out.print("Input patient age: ");
             }
-        }
+        } while (age < 0 || age > 200);
+        return age;
     }
 
     /*
-    * input student address
-    * */
+     * input student address
+     * */
 
     private String inputPatientAddress() {
         System.out.print("Input patient address: ");
@@ -106,42 +127,57 @@ public class PatientManager {
 
     private String inputPatientTelephone() {
         System.out.print("Input patient telephone: ");
-        return scanner.nextLine();
+        String phoneNumber = scanner.nextLine();
+
+        boolean isPhoneNumberValid = Utils.validatePhoneNumber(phoneNumber);
+
+        if (!isPhoneNumberValid) {
+            System.out.println("Phone number is invalid");
+            inputPatientTelephone();
+        }
+
+        return null;
     }
 
     private int inputPatientPriority() {
         System.out.print("Input patient priority: ");
-        while (true) {
+        int priority = 0;
+        do {
             try {
-                int priority = Integer.parseInt((scanner.nextLine()));
-                if (priority < 0 && priority > 3) {
-                    throw new NumberFormatException();
+                priority = Integer.parseInt((scanner.nextLine()));
+                if (priority < 0 || priority > 3) {
+                    System.out.println("Invalid input patient priority. Range of patient priority from 0 to 3.");
+                    System.out.print("Input patient priority: ");
                 }
-                return priority;
             } catch (NumberFormatException ex) {
-                System.out.println("Invalid input patient priority. Range of patient priority from 0 to 3. ");
+                System.out.println("Invalid input patient priority. Range of patient priority from 0 to 3.");
+                System.out.print("Input patient priority: ");
             }
-        }
+        } while (priority < 0 || priority > 3);
+        return priority;
     }
 
     public int patientIsTakeAnExam() {
         System.out.print("Patient took an exam: ");
-        while (true) {
+        int patientTookExam = -1;
+        do {
             try {
-                int patientTookExam = Integer.parseInt((scanner.nextLine()));
-                if (patientTookExam < 0 && patientTookExam > 1) {
-                    throw new NumberFormatException();
+                patientTookExam = Integer.parseInt((scanner.nextLine()));
+                if (patientTookExam != 0 && patientTookExam != 1) {
+                    System.out.println("Invalid input patient is taken exam. Valid value is 1 or 0");
+                    System.out.print("Patient took an exam: ");
                 }
-                return patientTookExam;
             } catch (NumberFormatException ex) {
-                System.out.println("Invalid input!");
+                System.out.println("Invalid input patient is taken exam. Valid value is 1 or 0");
+                System.out.print("Patient took an exam: ");
             }
-        }
+        } while (patientTookExam != 0 && patientTookExam != 1);
+        return patientTookExam;
     }
 
     /*
-    * getter and setter
-    * */
+     * getter and setter
+     * */
 
     public List<Patient> getPatientList() {
         return patientList;
@@ -151,4 +187,48 @@ public class PatientManager {
         this.patientList = patientList;
     }
 
+    public void filterPatientsList(String condition, String patientId) {
+        int patientIntId = Integer.parseInt(patientId);
+        List<Patient> filterPatients = new ArrayList<>();
+        switch (condition) {
+            case "<":
+                for (Patient patient : patientList) {
+                    if (patient.getId() < patientIntId) {
+                        filterPatients.add(patient);
+                    }
+                }
+                break;
+            case ">":
+                for (Patient patient : patientList) {
+                    if (patient.getId() > patientIntId) {
+                        filterPatients.add(patient);
+                    }
+                }
+                break;
+            case "=":
+                for (Patient patient : patientList) {
+                    if (patient.getId() == patientIntId) {
+                        filterPatients.add(patient);
+                    }
+                }
+                break;
+            default:
+                System.out.println("Unhandled value!");
+                break;
+        }
+        List<Patient> currentReviewList = patientDao.read(true);
+        if (null == currentReviewList) {
+            currentReviewList = patientList;
+        } else {
+            currentReviewList.addAll(filterPatients);
+            Collections.sort(currentReviewList, new SortPatientByPriority());
+        }
+        patientList.removeAll(currentReviewList);
+
+        patientDao.write(patientList, false);
+        patientDao.write(currentReviewList, true);
+
+        patientList = patientDao.read(false);
+        reviewedPatientList = patientDao.read(true);
+    }
 }
