@@ -3,7 +3,7 @@ package LSDandMSD;
 public class MSDAlgorithm {
     
     private static final int R = 256;   // extended ASCII alphabet size
-    private static final int CUTOFF = 15;   // cutoff to insertion sort
+    private static final int CUTOFF = 0;   // cutoff to insertion sort
 
     public static void main(String[] args) {
         String[] sampleData = new String[]{"password", "wordpass", "w01dp4ss", "p455w0rd",
@@ -11,10 +11,6 @@ public class MSDAlgorithm {
         int sampleDataLength = sampleData.length;
         String[] aux = new String[sampleDataLength];
         sort(sampleData, 0, sampleDataLength - 1, 0, aux);
-
-        for (int i = 0; i < sampleDataLength; ++i) {
-            System.out.println(sampleData[i]);
-        }
     }
 
     // return dth character of s, -1 if d = length of string
@@ -50,9 +46,14 @@ public class MSDAlgorithm {
         }
 
         // copy back
-        for (int i = lo; i <= hi; i++)
+        for (int i = lo; i <= hi; i++) {
             a[i] = aux[i - lo];
+        }
 
+        for (int i = 0; i < a.length; i++) {
+            System.out.println(a[i]);
+        }
+        System.out.println("=======================================================");
 
         // recursively sort for each character (excludes sentinel -1)
         for (int r = 0; r < R; r++)

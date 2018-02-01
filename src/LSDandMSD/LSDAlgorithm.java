@@ -58,7 +58,9 @@ public class LSDAlgorithm {
             // copy back
             for (int i = 0; i < arrayLength; ++i) {
                 inputArray[i] = aux[i];
+                System.out.println(inputArray[i]);
             }
+            System.out.println("=======================================================");
         }
     }
 }

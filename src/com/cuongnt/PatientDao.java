@@ -12,7 +12,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 
 
 public class PatientDao {
@@ -42,19 +44,19 @@ public class PatientDao {
     /*
     * Read list Patient from file
     * */
-    public List<Patient> read(boolean isReviewList) {
-        List<Patient> patientList = new ArrayList<>();
+    public LinkedList<Patient> readToLinkedList() {
+        LinkedList<Patient> patientList = new LinkedList<>();
         FileInputStream fis = null;
         ObjectInputStream ois = null;
-        File targetFile = new File(isReviewList ? REVIEW_PATIENT_FILE_NAME : PATIENT_FILE_NAME);
+        File targetFile = new File(PATIENT_FILE_NAME);
         try {
             if (!targetFile.exists()) {
-                targetFile.mkdirs();
-                targetFile.createNewFile();
+                patientList = new LinkedList<>();
+            } else {
+                fis = new FileInputStream(targetFile);
+                ois = new ObjectInputStream(fis);
+                patientList = (LinkedList<Patient>) ois.readObject();
             }
-            fis = new FileInputStream(targetFile);
-            ois = new ObjectInputStream(fis);
-            patientList = (List<Patient>) ois.readObject();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -66,7 +68,32 @@ public class PatientDao {
             closeStream(ois);
         }
         return patientList;
+    }
 
+    public Stack<Patient> readToStack() {
+        Stack<Patient> patientList = new Stack<>();
+        FileInputStream fis = null;
+        ObjectInputStream ois = null;
+        File targetFile = new File(REVIEW_PATIENT_FILE_NAME);
+        try {
+            if (!targetFile.exists()) {
+                patientList = new Stack<>();
+            } else {
+                fis = new FileInputStream(targetFile);
+                ois = new ObjectInputStream(fis);
+                patientList = (Stack<Patient>) ois.readObject();
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            closeStream(fis);
+            closeStream(ois);
+        }
+        return patientList;
     }
 
     /*

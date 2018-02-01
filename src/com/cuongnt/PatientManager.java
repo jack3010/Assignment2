@@ -1,29 +1,49 @@
 package com.cuongnt;
 
+import com.cuongnt.utils.CollectionAllowDuplicatedKey;
 import com.cuongnt.utils.Utils;
 import model.Patient;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class PatientManager {
     public static Scanner scanner = new Scanner(System.in);
     private static final int PATIENT_TOOK_AN_EXAM = 1;
-    private List<Patient> patientList;
-    private List<Patient> reviewedPatientList;
+    private LinkedList<Patient> patientList;
+    private Stack<Patient> reviewedPatientList;
+    private CollectionAllowDuplicatedKey patientSearchList;
+    private CollectionAllowDuplicatedKey reviewPatientSearchList;
     private PatientDao patientDao;
 
-    public List<Patient> getReviewedPatientList() {
+    public Stack<Patient> getReviewedPatientList() {
         return reviewedPatientList;
+    }
+
+    public CollectionAllowDuplicatedKey getPatientSearchList() {
+        if (null == patientSearchList) {
+            patientSearchList = new CollectionAllowDuplicatedKey();
+            for (Patient patient : getPatientList()) {
+                patientSearchList.putValue(patient.getName(), patient);
+            }
+        }
+        return patientSearchList;
+    }
+
+    public CollectionAllowDuplicatedKey getReviewPatientSearchList() {
+        if (null == reviewPatientSearchList) {
+            reviewPatientSearchList = new CollectionAllowDuplicatedKey();
+            for (Patient patient : getReviewedPatientList()) {
+                reviewPatientSearchList.putValue(patient.getName(), patient);
+            }
+        }
+        return reviewPatientSearchList;
     }
 
     public PatientManager() {
         patientDao = new PatientDao();
-        patientList = patientDao.read(false);
-        reviewedPatientList = patientDao.read(true);
+        patientList = patientDao.readToLinkedList();
+        reviewedPatientList = patientDao.readToStack();
     }
 
     /*
@@ -42,9 +62,14 @@ public class PatientManager {
         int tookAnExam = patientIsTakeAnExam();
         Patient patient = new Patient(id, name, age, address, telephone, priority, tookAnExam);
         patientList.add(patient);
+        Collections.sort(patientList, new SortPatientByPriority());
         if (tookAnExam == PATIENT_TOOK_AN_EXAM) {
             patientDao.write(patientList, false);
         }
+    }
+
+    public void addPatient(Patient patient) {
+        patientList.add(patient);
     }
 
     /*
@@ -136,7 +161,7 @@ public class PatientManager {
             inputPatientTelephone();
         }
 
-        return null;
+        return phoneNumber;
     }
 
     private int inputPatientPriority() {
@@ -179,17 +204,13 @@ public class PatientManager {
      * getter and setter
      * */
 
-    public List<Patient> getPatientList() {
+    public LinkedList<Patient> getPatientList() {
         return patientList;
-    }
-
-    public void setPatientList(List<Patient> patientList) {
-        this.patientList = patientList;
     }
 
     public void filterPatientsList(String condition, String patientId) {
         int patientIntId = Integer.parseInt(patientId);
-        List<Patient> filterPatients = new ArrayList<>();
+        LinkedList<Patient> filterPatients = new LinkedList<>();
         switch (condition) {
             case "<":
                 for (Patient patient : patientList) {
@@ -216,19 +237,25 @@ public class PatientManager {
                 System.out.println("Unhandled value!");
                 break;
         }
-        List<Patient> currentReviewList = patientDao.read(true);
-        if (null == currentReviewList) {
-            currentReviewList = patientList;
-        } else {
-            currentReviewList.addAll(filterPatients);
-            Collections.sort(currentReviewList, new SortPatientByPriority());
+        Stack<Patient> currentReviewList = patientDao.readToStack();
+
+        while (!filterPatients.isEmpty()) {
+            Patient patient = filterPatients.pop();
+            if (!currentReviewList.contains(patient)) {
+                currentReviewList.add(patient);
+            }
         }
+
+        currentReviewList.removeAll(filterPatients);
+        currentReviewList.addAll(filterPatients);
+
+        Collections.sort(currentReviewList, new SortPatientByPriority());
         patientList.removeAll(currentReviewList);
 
         patientDao.write(patientList, false);
         patientDao.write(currentReviewList, true);
 
-        patientList = patientDao.read(false);
-        reviewedPatientList = patientDao.read(true);
+        patientList = patientDao.readToLinkedList();
+        reviewedPatientList = patientDao.readToStack();
     }
 }

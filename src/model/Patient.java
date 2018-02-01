@@ -79,4 +79,10 @@ public class Patient implements Serializable {
     public void setExaminated(int examinated) {
         isExaminated = examinated;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        Patient patient = (Patient) obj;
+        return patient.getId() == getId() && patient.getName().equals(getName()) && patient.getPriority() == getPriority();
+    }
 }

@@ -1,10 +1,9 @@
 package com.cuongnt;
 
+import com.cuongnt.utils.CollectionAllowDuplicatedKey;
 import model.Patient;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -99,7 +98,7 @@ public class Main {
             if (exit) {
                 break;
             }
-            if (null != backToReviewMenu && !backToReviewMenu) {
+            if (null == backToReviewMenu || (null != backToReviewMenu && !backToReviewMenu)) {
                 showMainMenu();
                 backToReviewMenu = null;
             }
@@ -145,13 +144,9 @@ public class Main {
                 return true;
             }
         } else {
-            List<Patient> searchResultPatients = new ArrayList<>();
-            List<Patient> listOfPatients = isReviewList ? patientManager.getReviewedPatientList() : patientManager.getPatientList();
-            for (Patient patient : listOfPatients) {
-                if (patient.getName().toLowerCase().contains(searchContent)) {
-                    searchResultPatients.add(patient);
-                }
-            }
+            CollectionAllowDuplicatedKey listOfPatients = isReviewList ? patientManager.getReviewPatientSearchList() : patientManager.getPatientSearchList();
+            List<Patient> searchResultPatients = listOfPatients.searchByName(searchContent);
+            Collections.sort(searchResultPatients, new SortPatientByPriority());
             patientManager.show(searchResultPatients);
             if (isReviewList) {
                 showReviewMenu();
