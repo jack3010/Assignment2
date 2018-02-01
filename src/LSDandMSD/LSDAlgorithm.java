@@ -6,10 +6,6 @@ public class LSDAlgorithm {
         String[] sampleData = new String[]{"password", "wordpass", "w01dp4ss", "p455w0rd",
                 "2assw0rd", "drowssap", "ssapdrow"};
         sort(sampleData);
-        int sampleDataLength = sampleData.length;
-        for (int i = 0; i < sampleDataLength; ++i) {
-            System.out.println(sampleData[i]);
-        }
     }
 
     public static int findLongestLength(String[] inputArray) {
@@ -54,12 +50,13 @@ public class LSDAlgorithm {
                 int c = findCharAtInString(i, d, inputArray);
                 aux[count[c]++] = inputArray[i];
             }
-
             // copy back
             for (int i = 0; i < arrayLength; ++i) {
                 inputArray[i] = aux[i];
                 System.out.println(inputArray[i]);
             }
+
+            System.out.println("Count: " + d);
             System.out.println("=======================================================");
         }
     }
