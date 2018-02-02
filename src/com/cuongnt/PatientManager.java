@@ -100,18 +100,6 @@ public class PatientManager {
         Collections.sort(patientList, new SortPatientByPriority());
     }
 
-    public int inputId() {
-        System.out.print("Input student id: ");
-        while (true) {
-            try {
-                int id = Integer.parseInt((scanner.nextLine()));
-                return id;
-            } catch (NumberFormatException ex) {
-                System.out.print("invalid! Input student id again: ");
-            }
-        }
-    }
-
     /*
      * input patient name
      * */
